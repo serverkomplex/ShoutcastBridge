@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<bridge>
+  
+  <!--<ip>0.0.0.0</ip>-->
+  <port>61121</port>
+  
+  <stream password="testing0">
+    <port>8000</port>
+    <mountpoint>/stream</mountpoint>
+  </stream>
+  
+  <stream password="testing1">
+    <host>internal.listen.rekt.in</host>
+    <port>61120</port>
+    <username>source</username>
+    <password>testing</password>
+    <mountpoint>/afr-herp/live</mountpoint>
+  </stream>
+
+  <stream password="testing2">
+    <host>internal.listen.rekt.in</host>
+    <port>61120</port>
+    <username>source</username>
+    <password>testing</password>
+    <mountpoint>/afr-derp/live</mountpoint>
+  </stream>
+
+  <stream password="testing3">
+    <host>internal.listen.rekt.in</host>
+    <port>61120</port>
+    <username>source</username>
+    <password>testing</password>
+    <mountpoint>/afr-lurk/live</mountpoint>
+  </stream>
+
+</bridge>
