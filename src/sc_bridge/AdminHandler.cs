@@ -1,6 +1,8 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using uhttpsharp;
+using uhttpsharp.Headers;
 
 namespace AFR.ShoutcastBridge
 {
