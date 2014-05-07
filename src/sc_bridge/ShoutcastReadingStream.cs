@@ -109,7 +109,7 @@ namespace AFR.ShoutcastBridge
             }
 
             // Content
-            var data = new byte[2048];
+            var data = new byte[16 * 1024];
             try
             {
                 int length;

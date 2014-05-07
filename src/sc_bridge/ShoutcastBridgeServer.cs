@@ -1,12 +1,16 @@
-﻿using log4net;
+﻿using System.IO;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using TagLib;
+using TagLib.Aac;
 using uhttpsharp;
 using uhttpsharp.Listeners;
 using uhttpsharp.RequestProviders;
+using File = System.IO.File;
 
 namespace AFR.ShoutcastBridge
 {
@@ -164,21 +168,49 @@ namespace AFR.ShoutcastBridge
                             icecast.Url = shoutcast.StreamUrl;
                             icecast.Public = shoutcast.StreamPublic;
                             if (icecast.ContentType == "undefined")
-                                switch (BitConverter.ToString(data.Take(2).ToArray()).Replace("-", "").ToLower())
+                            {
+                                var fmtcode = BitConverter.ToString(data.Take(2).ToArray()).Replace("-", "").ToLower();
+                                switch (fmtcode)
                                 {
                                     case "4f67": // OGG container
                                         _sourcelog.DebugFormat("[{0}] Detected OGG audio container", srs.ClientEndPoint);
                                         icecast.ContentType = "audio/ogg";
                                         break;
-                                    case "fff9": // AAC
-                                        _sourcelog.DebugFormat("[{0}] Detected AAC-LC data", srs.ClientEndPoint);
-                                        icecast.ContentType = "audio/aac";
-                                        break;
                                     default:
-                                        _sourcelog.DebugFormat("[{0}] Assuming MP3 codec", srs.ClientEndPoint);
-                                        icecast.ContentType = "audio/mpeg";
+
+                                        var testpath = Path.GetTempFileName() + ".mp3"; // Will make TagLib try to parse the file as MP3
+                                        try
+                                        {
+                                            using (var fs = File.Open(testpath, FileMode.OpenOrCreate))
+                                            {
+                                                fs.Write(data, 0, data.Length);
+                                                fs.Flush();
+                                            }
+                                        }
+                                        catch (Exception err)
+                                        {
+                                            _sourcelog.ErrorFormat("[{0}] Failed writing temporary data for analysis: {1}", srs.ClientEndPoint, err);
+                                            throw;
+                                        }
+
+                                        try
+                                        {
+                                            var f = TagLib.File.Create(testpath);
+                                            if (f.PossiblyCorrupt)
+                                                throw new Exception();
+
+                                            _sourcelog.DebugFormat("[{0}] Detected MP3 codec", srs.ClientEndPoint);
+                                            icecast.ContentType = f.MimeType;
+                                            File.Delete(testpath);
+                                        }
+                                        catch
+                                        {
+                                            _sourcelog.DebugFormat("[{0}] Assuming AAC codec", srs.ClientEndPoint);
+                                            icecast.ContentType = "audio/aac";
+                                        }
                                         break;
                                 }
+                            }
                             if (!icecast.Open())
                             {
                                 _sourcelog.ErrorFormat("[{0}] Could not connect with Icecast, retrying on next packet", srs.ClientEndPoint);
