@@ -107,7 +107,7 @@ namespace AFR.ShoutcastBridge
             {
                 if (_ns == null || _sr == null || _sw == null || _tcp == null || !_tcp.Connected)
                     return;
-                _sw.BaseStream.WriteAsync(data, 0, data.Length);
+                _sw.BaseStream.Write(data, 0, data.Length);
             }
             catch (Exception error)
             {
