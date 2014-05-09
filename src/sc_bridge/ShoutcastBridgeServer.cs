@@ -200,7 +200,7 @@ namespace AFR.ShoutcastBridge
                                                 throw new Exception();
 
                                             _sourcelog.DebugFormat("[{0}] Detected MP3 codec", srs.ClientEndPoint);
-                                            icecast.ContentType = f.MimeType;
+                                            icecast.ContentType = "audio/mpeg";
                                             File.Delete(testpath);
                                         }
                                         catch
