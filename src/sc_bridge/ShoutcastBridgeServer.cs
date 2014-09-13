@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -67,6 +68,11 @@ namespace AFR.ShoutcastBridge
                 _log.ErrorFormat("Could not start up admin HTTP server. {0}", error.Message);
             }
             _adminServer.Use(new AdminHandler(this));
+            _adminServer.Use(new AnonymousHttpRequestHandler((ctx, next) =>
+            {
+                ctx.Response = HttpResponse.CreateWithMessage(HttpResponseCode.NotFound, "Not found", false);
+                return Task.Factory.GetCompleted();
+            }));
             try
             {
                 _adminServer.Start();
@@ -251,7 +257,7 @@ namespace AFR.ShoutcastBridge
             // Authorize client - requirement: same IP
             if (!_connectedMountpoints[password].Item1.ClientEndPoint.Address.Equals(remoteEndPoint.Address))
             {
-                _adminlog.DebugFormat("[{0}] Metadata update declined: IP mismatch", remoteEndPoint);
+                _adminlog.DebugFormat("[{0}] Metadata update declined: IP mismatch, stream IP is {1}", remoteEndPoint, _connectedMountpoints[password].Item1.ClientEndPoint);
                 return false;
             }
 
